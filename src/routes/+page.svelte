@@ -13,16 +13,18 @@
 		message: string;
 	}
 
-	let history: ChatEvent[] = [
-		{
-			user: 'system',
-			message: 'You are an assistant helping the user.'
-		}
-	];
+	let systemMessage = 'You are an helpful assistant.';
 
-	function historyToString(h: ChatEvent[]) {
+	let history: ChatEvent[] = [];
+
+	function historyToString(systemMessage: string, h: ChatEvent[]) {
 		return (
-			h.map(({ user, message }) => `${user}: ${message}`).join('\n') + '\n' + assistant_name + ': '
+			systemMessage +
+			'\n' +
+			h.map(({ user, message }) => `${user}: ${message}`).join('\n') +
+			'\n' +
+			assistant_name +
+			': '
 		);
 	}
 	const params: LlamaParams = {
@@ -55,7 +57,7 @@
 			}
 		];
 
-		let prompt = historyToString(history);
+		let prompt = historyToString(systemMessage, history);
 
 		(async () => {
 			for await (const result of llama(prompt, params)) {
@@ -73,14 +75,13 @@
 
 <div class="grid">
 	<div class="output">
+		<div class="system">
+			Initial: <span bind:innerText={systemMessage} contenteditable />
+		</div>
 		{#each history as { user, message }}
-			{#if user === 'system'}
-				<div class="system">Initial: {message}</div>
-			{:else}
-				<div>
-					<strong class="user">{user}</strong>: <Markdown source={message} />
-				</div>
-			{/if}
+			<div>
+				<strong class="user">{user}</strong>: <Markdown source={message} />
+			</div>
 		{/each}
 		<span bind:this={end} id="end" />
 	</div>
